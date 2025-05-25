@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Reader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Body Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            /* Soft background color */
+            color: #333;
+            /* Contrasting text color */
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* Ensure body takes full viewport height */
+        }
+
+        /* Smooth Scroll for better UX */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Sticky Top Bar for navigation and controls */
+        .top-bar {
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            /* Enhanced shadow */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            flex-wrap: wrap;
+            /* Allow wrapping on smaller screens */
+            gap: 1rem;
+            /* Space between items */
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            /* Slightly larger title */
+            color: #4a90e2;
+            /* Primary accent color */
+            font-weight: 600;
+        }
+
+        /* File Upload Button Styling */
+        .upload-btn {
+            background-color: #4a90e2;
+            /* Primary accent color */
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            /* Larger padding for better touch target */
+            border-radius: 25px;
+            /* More rounded corners */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            /* Smooth transitions */
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(74, 144, 226, 0.2);
+            /* Subtle shadow */
+        }
+
+        .upload-btn:hover {
+            background-color: #3a70c0;
+            /* Darker shade on hover */
+            transform: translateY(-2px);
+            /* Slight lift effect */
+        }
+
+        .upload-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
+        }
+
+        /* Main Document Content Area */
+        .document-container {
+            flex-grow: 1;
+            /* Allows container to take available space */
+            padding: 2rem;
+            max-width: 900px;
+            /* Max width for readability */
+            margin: 1.5rem auto;
+            /* Center content with margin */
+            display: grid;
+            /* Using Grid for overall layout, though Flexbox is used within cards */
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Section Card for each main title */
+        .section-card {
+            background-color: white;
+            border-radius: 12px;
+            /* More rounded corners */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            /* Softer, larger shadow */
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            /* Smooth transitions */
+            animation: fadeIn 0.6s ease-out forwards;
+            /* Fade-in animation */
+        }
+
+        .section-card:hover {
+            transform: translateY(-3px);
+            /* Lift effect on hover */
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Animation for new sections */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Styling for Main Titles (h1) within cards */
+        .section-card h1 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            /* Allow wrapping for button on small screens */
+            border-bottom: 2px solid #e0e0e0;
+            /* Lighter border */
+            padding-bottom: 0.8rem;
+        }
+
+        /* Styling for Subtitles (h2) within cards */
+        .section-card h2 {
+            color: #555;
+            /* Slightly softer color for subtitles */
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #e9e9e9;
+            /* Even lighter border */
+            padding-bottom: 0.5rem;
+        }
+
+        /* Styling for Paragraphs (p) within cards */
+        .section-card p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+            color: #444;
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* Speak Button Styling */
+        .speak-btn {
+            background-color: transparent;
+            border: 1px solid #4a90e2;
+            color: #4a90e2;
+            border-radius: 20px;
+            /* Pill-shaped button */
+            padding: 0.3rem 0.8rem;
+            /* Smaller padding for inline fit */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 0.75rem;
+            /* Space from text */
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            /* Space between icon and text */
+            flex-shrink: 0;
+            /* Prevent button from shrinking */
+        }
+
+        .speak-btn:hover {
+            background-color: #4a90e2;
+            color: white;
+            box-shadow: 0 2px 5px rgba(74, 144, 226, 0.3);
+        }
+
+        .speak-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem;
+            }
+
+            .top-bar h1 {
+                margin-bottom: 0.8rem;
+                font-size: 1.6rem;
+            }
+
+            .upload-btn {
+                width: 100%;
+                text-align: center;
+                padding: 0.6rem 1rem;
+            }
+
+            .document-container {
+                padding: 1rem;
+                margin: 1rem auto;
+            }
+
+            .section-card {
+                padding: 1.2rem;
+            }
+
+            .section-card h1 {
+                font-size: 1.7rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .section-card h2 {
+                font-size: 1.3rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .section-card p {
+                font-size: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .speak-btn {
+                margin-left: 0;
+                margin-top: 0.5rem;
+                width: fit-content;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-bar h1 {
+                font-size: 1.4rem;
+            }
+
+            .upload-btn {
+                font-size: 0.9rem;
+            }
+
+            .section-card h1 {
+                font-size: 1.5rem;
+            }
+
+            .section-card h2 {
+                font-size: 1.2rem;
+            }
+
+            .section-card p {
+                font-size: 0.95rem;
+            }
+
+            .speak-btn {
+                padding: 0.2rem 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-bar">
+        <h1>Document Reader</h1>
+        <input type="file" id="file-upload" accept=".txt" style="display: none;">
+        <button class="upload-btn" id="upload-button">Upload .txt File</button>
+    </div>
+
+    <div class="document-container" id="document-content">
+        <div class="section-card fade-in">
+            <h1>Welcome!</h1>
+            <p>Upload a <code>.txt</code> file to visualize its structure and listen to its content.</p>
+            <p>Supported format:</p>
+            <ul>
+                <li><code>#* Main Title</code> &rarr; Renders as a main section (<code>&lt;h1&gt;</code>)</li>
+                <li><code>* Subtitle</code> &rarr; Renders as a subtitle (<code>&lt;h2&gt;</code>)</li>
+                <li><code>Plain text</code> &rarr; Renders as a paragraph (<code>&lt;p&gt;</code>)</li>
+            </ul>
+            <p>Each section, subtitle, and paragraph will have a "Speak" button.</p>
+        </div>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        const uploadButton = document.getElementById('upload-button');
+        const fileUpload = document.getElementById('file-upload');
+        const documentContent = document.getElementById('document-content');
+
+        // Web Speech API SpeechSynthesis object
+        const synth = window.speechSynthesis;
+        // Variable to hold the currently speaking utterance, allows stopping it
+        let currentUtterance = null;
+
+        // Event listener for the upload button click, triggers the hidden file input
+        uploadButton.addEventListener('click', () => {
+            fileUpload.click();
+        });
+
+        // Event listener for when a file is selected in the input
+        fileUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0]; // Get the first selected file
+            if (file) {
+                readFile(file); // Proceed to read the file
+            }
+        });
+
+        /**
+         * Reads the content of the uploaded file.
+         * @param {File} file - The .txt file to read.
+         */
+        function readFile(file) {
+            const reader = new FileReader(); // Create a new FileReader instance
+            reader.onload = function (event) {
+                const text = event.target.result; // Get the text content of the file
+                parseAndRenderText(text); // Parse and render the text
+            };
+            reader.readAsText(file); // Read the file as plain text
+        }
+
+        /**
+         * Parses the text content and renders it into the document structure.
+         * @param {string} text - The raw text content from the .txt file.
+         */
+        function parseAndRenderText(text) {
+            documentContent.innerHTML = ''; // Clear any existing content in the display area
+            const lines = text.split('\n'); // Split the text into individual lines
+            let currentSectionCard = null; // Keep track of the current section card (h1 group)
+
+            lines.forEach(line => {
+                line = line.trim(); // Trim whitespace from the beginning and end of each line
+
+                if (line.startsWith('#*')) {
+                    // If the line starts with '#*', it's a main title (h1)
+                    const titleText = line.substring(2).trim(); // Extract the title text
+                    currentSectionCard = createSectionCard(titleText); // Create a new section card
+                    documentContent.appendChild(currentSectionCard); // Add the new section card to the document
+                } else if (line.startsWith('*')) {
+                    // If the line starts with '*', it's a subtitle (h2)
+                    const subtitleText = line.substring(1).trim(); // Extract the subtitle text
+                    if (currentSectionCard) {
+                        // Ensure there's an active section card to append to
+                        const subtitle = createSubtitle(subtitleText); // Create the subtitle element
+                        currentSectionCard.appendChild(subtitle); // Add subtitle to the current section card
+                    }
+                } else if (line) {
+                    // If it's plain text (and not empty), it's a paragraph (p)
+                    if (currentSectionCard) {
+                        // Ensure there's an active section card to append to
+                        const paragraph = createParagraph(line); // Create the paragraph element
+                        currentSectionCard.appendChild(paragraph); // Add paragraph to the current section card
+                    }
+                }
+            });
+        }
+
+        /**
+         * Creates a new section card (div) for a main title and its content.
+         * @param {string} titleText - The text for the main title (h1).
+         * @returns {HTMLDivElement} The created section card element.
+         */
+        function createSectionCard(titleText) {
+            const sectionCard = document.createElement('div');
+            sectionCard.classList.add('section-card'); // Add base class
+            // The 'fade-in' class is added by default in CSS for initial animation
+            // sectionCard.classList.add('fade-in'); // Add animation class
+
+            const title = document.createElement('h1');
+            title.textContent = titleText;
+
+            const speakButton = createSpeakButton(titleText); // Create a speak button for the title
+            title.appendChild(speakButton); // Append the speak button to the title
+
+            sectionCard.appendChild(title); // Add the title to the section card
+            return sectionCard;
+        }
+
+        /**
+         * Creates an h2 element for a subtitle.
+         * @param {string} subtitleText - The text for the subtitle (h2).
+         * @returns {HTMLHeadingElement} The created h2 element.
+         */
+        function createSubtitle(subtitleText) {
+            const subtitle = document.createElement('h2');
+            subtitle.textContent = subtitleText;
+
+            const speakButton = createSpeakButton(subtitleText); // Create a speak button for the subtitle
+            subtitle.appendChild(speakButton); // Append the speak button to the subtitle
+
+            return subtitle;
+        }
+
+        /**
+         * Creates a p element for a paragraph.
+         * @param {string} paragraphText - The text for the paragraph (p).
+         * @returns {HTMLParagraphElement} The created p element.
+         */
+        function createParagraph(paragraphText) {
+            const paragraph = document.createElement('p');
+            paragraph.textContent = paragraphText;
+
+            const speakButton = createSpeakButton(paragraphText); // Create a speak button for the paragraph
+            paragraph.appendChild(speakButton); // Append the speak button to the paragraph
+
+            return paragraph;
+        }
+
+        /**
+         * Creates a "Speak" button with the speaker icon.
+         * @param {string} textToSpeak - The text that this button should read aloud.
+         * @returns {HTMLButtonElement} The created speak button element.
+         */
+        function createSpeakButton(textToSpeak) {
+            const speakButton = document.createElement('button');
+            speakButton.classList.add('speak-btn');
+            // Using a Unicode speaker emoji for the button text
+            speakButton.innerHTML = '🔊 Speak';
+            // Add event listener to trigger speech when clicked
+            speakButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent potential bubbling if elements are nested
+                speakText(textToSpeak);
+            });
+            return speakButton;
+        }
+
+        /**
+         * Initiates text-to-speech for the given text.
+         * Stops any currently speaking utterance before starting a new one.
+         * @param {string} text - The text to be spoken.
+         */
+        function speakText(text) {
+            // If there's an utterance currently speaking, cancel it
+            if (currentUtterance && synth.speaking) {
+                synth.cancel();
+            }
+
+            // Create a new SpeechSynthesisUtterance object with the text
+            const utterance = new SpeechSynthesisUtterance(text);
+            // Optional: Set language, pitch, rate, volume if desired
+            // utterance.lang = 'en-US';
+            // utterance.pitch = 1;
+            // utterance.rate = 1;
+            // utterance.volume = 1;
+
+            // Start speaking the utterance
+            synth.speak(utterance);
+            // Store the current utterance so it can be cancelled later
+            currentUtterance = utterance;
+        }
+    </script>
+</body>
+
+</html>
